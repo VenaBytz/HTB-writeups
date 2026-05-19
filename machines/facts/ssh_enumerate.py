@@ -1,4 +1,5 @@
 #!/usr/bin/venv/bin/python3
+# Author: VenaBytz
 import paramiko
 import socket
 import argparse
@@ -46,7 +47,8 @@ def main():
       user=user.strip()
       if not user:
         continue
-      try_ssh_connection(user)
+      if(try_ssh_connection(user)):
+        break
 
 if __name__ == "__main__":
     main()
