@@ -31,23 +31,23 @@ Next.js v15.0.3 is potentially vulnerable to CVE-2025-29927 and CVE-2025-55182.
 ---
 ## Exploitation
 Using the `react2shell` exploit, I obtained a reverse shell as the `node` user. 
-![[HTB/Labs/reactor/screenshots/revshell.png]]
+![revshell](screenshots/revshell.png)
 
 ---
 ## Lateral Movement
 
 - **System users:** 
-![[system_users.png]]
+  ![system_users](screenshots/system_users.png)
 
 - **Current directory files:**
-![[files_curr.png]]
+  ![current_directory](screenshots/files_curr.png)
 
 Checking the `.env` file reveals that the database management system (DBMS) is SQLite and points to the database file `reactor.db`.
-![[env_file.png]]
+![env_file](screenshots/env_file.png)
 
 Inspecting the database reveals a `users` table containing a hashed password for `engineer`, who is also a valid system user.
 
-![[users_table.png]]
+![users_table](screenshots/users_table.png)
 
 Using `hashid` to identify the hash algorithm, I cracked the hash using `hashcat` to retrieve the plain-text password for `engineer`.
-![[hashid.png]]
+![hashid](screenshots/hashid.png)
