@@ -29,7 +29,42 @@ The credentials kevin:Enigma2024! works in roundcube, there is an email from sar
 
 The domain support_001.enigma.htb hosts an OpenSTAManager version 2.9.8, this is vulnerable to [CVE-2025-69216](https://github.com/devcode-it/openstamanager/security/advisories/GHSA-q6g3-fv43-m2w6).
 
-## Understanding the vulnerability (to do)
+## Understanding the vulnerability
+
+OpenSTAManager has a SQLi vulnerability in the id_anagrafica parameter; the vulnerability enables complete database read access through error-based SQL injection techniques.
+
+```php
+//openstamanager/templates/scadenzario/init.php
+if (get('id_anagrafica') && get('id_anagrafica') != 'null') {
+    $module_query = str_replace('1=1', '1=1 AND `co_scadenziario`.`idanagrafica`="'.get('id_anagrafica').'"', $module_query);
+    $id_anagrafica = get('id_anagrafica');
+}
+...
+$records = $dbo->fetchArray($module_query);
+
+//openstamanager/src/Database.php
+public function fetchArray($query, $parameters = [], $numeric = false){
+    $mode = empty($numeric) ? PDO::FETCH_ASSOC : PDO::FETCH_NUM;
+    $statement = $this->getPDO()->prepare($query);
+    $statement->execute($parameters);
+    $result = $statement->fetchAll($mode);
+    return $result;
+}
+```
+The `id_anagrafica` parameter is concatenated with the SQL query; to prevent this vulnerability, a parameterized query must be used.
+
+## Exploitation 
+
+<img src="screenshots/sqlmap.png" width="500" height="600">
+
+Openstamanager stores users hashed credentials in the table zz_users.
+
+<img src="screenshots/zz_users.png" width="500" height="600">
+
+The hash algorithm is Blowfish(OpenBSD), using hashcat module 3200 it's possible to recover the credentials.
+
+<img src="screenshots/hashcat.png" width="500" height="600">
+
 --- 
 # Resources 
 
