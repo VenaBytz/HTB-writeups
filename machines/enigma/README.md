@@ -78,7 +78,7 @@ The `$file` argument is concatenated directly into a shell command without appro
 
 ### Exploitation
 
-Uding the [PoC](https://github.com/BridgerAlderson/CVE-2025-69212-PoC) is possible to obtain a webshell.
+Using the [PoC](https://github.com/BridgerAlderson/CVE-2025-69212-PoC) is possible to obtain a webshell.
 
 <img src="screenshots/webshell.png" width="500" height="600">
 
@@ -108,8 +108,8 @@ Then we have command injection as root.
 
 --- 
 # Resources 
-https://docs.olivetin.app/config.html
-https://hackviser.com/tactics/pentesting/services/nfs
-https://github.com/devcode-it/openstamanager/security/advisories/GHSA-25fp-8w8p-mx36
-https://github.com/devcode-it/openstamanager/security/advisories/GHSA-q6g3-fv43-m2w6
-https://github.com/advisories/GHSA-49gm-hh7w-wfvf
+Configuration. (s. f.-b). https://docs.olivetin.app/config.html
+NFS (Network File System) Pentesting | Hackviser. (s. f.). https://hackviser.com/tactics/pentesting/services/nfs
+Devcode-It. (s. f.). OS Command Injection in P7M File Processing. GitHub. https://github.com/devcode-it/openstamanager/security/advisories/GHSA-25fp-8w8p-mx36
+Devcode-It. (s. f.-b). SQL Injection in Scadenzario Print Template. GitHub. https://github.com/devcode-it/openstamanager/security/advisories/GHSA-q6g3-fv43-m2w6
+CVE-2026-27626 - GitHub Advisory Database. (s. f.). GitHub. https://github.com/advisories/GHSA-49gm-hh7w-wfvf
