@@ -27,11 +27,11 @@ The credentials kevin:Enigma2024! works in roundcube, there is an email from sar
 
 <img src="screenshots/it_mail.png" alt="it mail" width="500" height="600">
 
-The domain support_001.enigma.htb hosts an OpenSTAManager version 2.9.8, this is vulnerable to [CVE-2025-69216](https://github.com/devcode-it/openstamanager/security/advisories/GHSA-q6g3-fv43-m2w6).
+The domain support_001.enigma.htb hosts an OpenSTAManager version 2.9.8.
 
-## Understanding the vulnerability
+## SQLi vulnerability
 
-OpenSTAManager has a SQLi vulnerability in the id_anagrafica parameter; the vulnerability enables complete database read access through error-based SQL injection techniques.
+This OpenSTAManager version has a SQLi vulnerability in the id_anagrafica parameter; the vulnerability enables complete database read access through error-based SQL injection techniques [CVE-2025-69216](https://nvd.nist.gov/vuln/detail/cve-2025-69216).
 
 ```php
 //openstamanager/templates/scadenzario/init.php
@@ -53,7 +53,7 @@ public function fetchArray($query, $parameters = [], $numeric = false){
 ```
 The `id_anagrafica` parameter is concatenated with the SQL query; to prevent this vulnerability, a parameterized query must be used.
 
-## Exploitation 
+### Exploitation 
 
 <img src="screenshots/sqlmap.png" width="500" height="600">
 
@@ -65,7 +65,51 @@ The hash algorithm is Blowfish(OpenBSD), using hashcat module 3200 it's possible
 
 <img src="screenshots/hashcat.png" width="500" height="600">
 
+## RCE vulnerability
+
+Another vulnerability in this openstamanager version is [CVE-2025-69212](https://nvd.nist.gov/vuln/detail/cve-2025-69212). The decodeP7M() function in src/Util/XML.php invokes exec() with user-controlled data incorporated directly into an OpenSSL command.
+
+```php
+//openstamanager/src/Util/XML.php
+public static function decodeP7M($file){
+    exec('openssl smime -verify -noverify -in "'.$file.'" -inform DER -out "'.$output_file.'"', $output, $cmd);
+```
+The `$file` argument is concatenated directly into a shell command without appropriate shell argument escaping. Consequently, shell metacharacters may be interpreted by the command shell, resulting in OS command injection.
+
+### Exploitation
+
+Uding the [PoC](https://github.com/BridgerAlderson/CVE-2025-69212-PoC) is possible to obtain a webshell.
+
+<img src="screenshots/webshell.png" width="500" height="600">
+
+# Privilege Escalation
+
+To identify privilege-escalation paths, an entry point may be the root's running processes, we can list it using the `ps` command.
+
+<img src="screenshots/revshell.png" width="500" height="600">
+
+## OS Command Injection 
+
+Olivetin is a root's running process, the version is 3000.10.0 which is vulnerable to [cve-2026-27626](https://nvd.nist.gov/vuln/detail/cve-2026-27626). 
+
+<img src="screenshots/olivetin_version.png" width="500" height="600">
+
+The password typed parameters are vulnerable to OS command injection via the Olivetin api startaction endpoint.
+
+<img src="screenshots/backupDB.png" width="500" height="600">
+
+In `/etc/OliveTin/config.yaml` there is an action named `backup_database` with the parameter `db_pass` which is of type password, so acording with the CVE we can inject this parameter.
+
+<img src="screenshots/backupDB.png" width="500" height="600">
+
+Then we have command injection as root.
+
+<img src="screenshots/root.png" width="500" height="600">
+
 --- 
 # Resources 
-
-https://hackviser-com.translate.goog/tactics/pentesting/services/nfs
+https://docs.olivetin.app/config.html
+https://hackviser.com/tactics/pentesting/services/nfs
+https://github.com/devcode-it/openstamanager/security/advisories/GHSA-25fp-8w8p-mx36
+https://github.com/devcode-it/openstamanager/security/advisories/GHSA-q6g3-fv43-m2w6
+https://github.com/advisories/GHSA-49gm-hh7w-wfvf
